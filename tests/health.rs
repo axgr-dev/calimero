@@ -15,6 +15,28 @@ async fn test_health_succeeds() {
     assert_eq!(Some(0), response.content_length());
 }
 
+#[tokio::test]
+async fn creating_a_contact_succeeds() {
+    let address = spawn();
+    let client = reqwest::Client::new();
+
+    let data = r#"
+        {
+            "email": "alice@example.org",
+            "first_name": "Alice",
+            "last_name": "Awesome"
+        }"#;
+    let response = client
+        .post(&format!("{}/contacts", &address))
+        .header("Content-Type", "application/json")
+        .body(data)
+        .send()
+        .await
+        .expect("Failed to add contact.");
+
+    assert_eq!(200, response.status().as_u16());
+}
+
 fn spawn() -> String {
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind to random port");
     let port = listener.local_addr().unwrap().port();
